@@ -1,0 +1,37 @@
+References #33.
+
+/bounty $50
+
+## Summary
+
+The API user creation endpoint accepts any string as an email value. This means invalid values such as `not-an-email`, empty strings, or malformed addresses can be accepted as user emails.
+
+## Impact
+
+This is a small API correctness bug. Invalid email values can pollute user data and make downstream user lookup, notification, and marketplace workflows less reliable.
+
+## Affected area
+
+- `apps/api/src/index.ts`
+- focused API validation for `POST /users`
+
+## Expected behavior
+
+`POST /users` should only accept a valid non-empty email string.
+
+## Suggested fix
+
+Add focused validation before creating/returning the user response:
+
+- Require `name` to be a non-empty string.
+- Require `email` to be a non-empty string.
+- Validate email with a simple conservative pattern.
+- Return `400` with a clear error for invalid payloads.
+- Keep the change scoped to the API route and tests.
+
+## Acceptance criteria
+
+- `POST /users` rejects missing or invalid email values.
+- Valid `name` and `email` still work.
+- Add focused test coverage for invalid email payloads.
+- Keep existing `/health` behavior unchanged.
